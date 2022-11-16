@@ -1,4 +1,5 @@
 var lineIndex=0;
+var concatenated = [];
 function toggle(e) {
 	var li = $(e.currentTarget).closest('li');
 	if (li.find('span:first').hasClass('collapsed')){
@@ -13,7 +14,9 @@ function toggle(e) {
 	}
 }
 function clearView (e) {
-	$('#loglist').empty();	
+	$('#loglist').empty();
+	$('#concatenated').empty();
+	concatenated = [];
 }
 function expandAll(e) {
 	$('.json_content').removeClass('hide');
@@ -78,9 +81,16 @@ chrome.devtools.network.onRequestFinished.addListener(function (netevent) {
 			netevent.getContent($.proxy(function(body, encoding){ 
 				var parsed = JSON.parse(body); 
 				$('#k'+this.lineIndex).find('.response').JSONView(parsed);
+				
+				if (netevent.request.url.indexOf($('#url_filter').val()) != -1) {
+					concatenated = concatenated.concat(parsed[$('#attribute_filter').val()]);
+					$('#concatenated').val(JSON.stringify(concatenated));
+				}
+
 			}, {lineIndex:lineIndex}));
 			var list = $('body');
 			list.animate({scrollTop : list.prop('scrollHeight')}, '500');
+		
 		}
 	}
 });
